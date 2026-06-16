@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0F0F1A;color:#E8E8F0;font-family:Arial,sans-serif;padding:12px;min-height:100vh}
+.wrap{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+
+/* Cards */
+.card{background:#1A1A2E;border:0.5px solid #2A2A42;border-radius:12px;padding:14px 16px}
+.dark-card{background:#12122A;border:0.5px solid #2A2A42;border-radius:12px;padding:14px 16px}
+.sec-title{font-size:11px;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+
+/* Level labels */
+.level-lbl{font-size:10px;font-weight:700;color:#444466;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;padding-left:2px}
+
+/* Grid */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#12122A;border-radius:8px;padding:10px;text-align:center}
+.stat-val{font-size:17px;font-weight:700;color:#E8E8F0}
+.stat-lbl{font-size:10px;color:#555570;margin-top:2px}
+
+/* Tabs */
+.tab-row{display:flex;gap:6px;flex-wrap:wrap}
+.tab{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;border:0.5px solid #2A2A42;color:#888899;background:#12122A;cursor:pointer;transition:all .15s}
+.tab.active{background:#0F3D2E;color:#1D9E75;border-color:#1D9E75}
+
+/* Progress bars */
+.pbar-wrap{background:#1E1E38;border-radius:4px;overflow:hidden}
+.pbar-fill{border-radius:4px;transition:width .6s ease}
+.pbar-labels{display:flex;justify-content:space-between;font-size:10px;color:#333355;margin-top:3px}
+
+/* Gamification metrics */
+.metric-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#2A2A42;border-radius:8px;overflow:hidden;margin-top:10px}
+.metric{background:#12122A;padding:10px;text-align:center}
+.mv{font-size:15px;font-weight:700}
+.ml{font-size:10px;color:#444466;margin-top:2px}
+
+/* Gantt */
+.gantt-header{display:flex;margin-left:120px;margin-bottom:5px}
+.gantt-wk{flex:1;font-size:10px;color:#333355;text-align:center}
+.gantt-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.gantt-row:last-child{margin-bottom:0}
+.gantt-lbl{width:112px;flex-shrink:0;font-size:11px}
+.gantt-track{flex:1;background:#12122A;border-radius:3px;height:20px;position:relative;overflow:hidden}
+.gantt-bg{position:absolute;height:100%;border-radius:3px;opacity:.2}
+.gantt-prog{position:absolute;height:100%;border-radius:3px;opacity:.9;transition:width .5s}
+.gantt-text{position:absolute;height:100%;display:flex;align-items:center;padding-left:7px;font-size:10px;font-weight:700;gap:4px}
+.pulse{width:5px;height:5px;border-radius:50%;flex-shrink:0;animation:p 1.5s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Tasks */
+.phase-block{margin-bottom:10px}
+.phase-block:last-child{margin-bottom:0}
+.phase-hdr{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;cursor:pointer;user-select:none}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.phase-name{flex:1;font-size:12px;font-weight:700}
+.phase-cnt{font-size:11px;color:#555570}
+.chevron{font-size:14px;color:#555570;transition:transform .2s}
+.chevron.open{transform:rotate(90deg)}
+.task-list{display:flex;flex-direction:column;gap:4px;padding:4px 0 0 4px;display:none}
+.task-list.open{display:flex}
+.task-row{display:flex;align-items:flex-start;gap:7px;padding:8px 10px;background:#12122A;border-radius:7px}
+.task-cb{width:15px;height:15px;border-radius:3px;border:0.5px solid #333355;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;margin-top:1px;cursor:pointer;transition:all .15s}
+.task-cb.done{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.task-cb.working{background:#E07B39;border-color:#E07B39;color:#fff}
+.task-info{flex:1;min-width:0}
+.task-name{font-size:11px;color:#C8C8D8;line-height:1.4}
+.task-name.done{color:#444466;text-decoration:line-through}
+.task-meta{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
+.priority{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;flex-shrink:0}
+.p-high{background:#3A1515;color:#E24B4A}
+.p-mid{background:#2A2010;color:#EF9F27}
+.p-low{background:#0F2A1E;color:#1D9E75}
+.deadline{font-size:10px;color:#444466}
+.deadline.overdue{color:#E24B4A;font-weight:700}
+.type-tag{font-size:9px;color:#333355;padding:1px 5px;border:0.5px solid #2A2A42;border-radius:4px}
+.coins{font-size:10px;font-weight:700;color:#7F77DD;flex-shrink:0;white-space:nowrap}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;background:transparent;border:0.5px dashed #2A2A42;border-radius:7px;color:#444466;font-size:11px;cursor:default;margin-top:4px;width:100%}
+
+/* Status badge */
+.status-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px}
+.status-active{background:#0F3D2E;color:#1D9E75;border:0.5px solid #1D9E75}
+.status-launch{background:#2A2010;color:#EF9F27;border:0.5px solid #EF9F27}
+.status-idea{background:#1E1E38;color:#888899;border:0.5px solid #333355}
+.status-scale{background:#0C1E38;color:#2471A3;border:0.5px solid #2471A3}
+
+/* Activity */
+.streak-row{display:flex;gap:8px;margin-bottom:12px}
+.streak-stat{background:#12122A;border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:8px;flex:1}
+.streak-icon{font-size:16px}
+.streak-val{font-size:18px;font-weight:700;color:#E8E8F0}
+.streak-lbl{font-size:10px;color:#555570;margin-top:1px}
+.days-grid{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px}
+.day{width:20px;height:20px;border-radius:3px;position:relative;cursor:pointer;flex-shrink:0}
+.day:hover .tip{display:block}
+.tip{display:none;position:absolute;bottom:26px;left:50%;transform:translateX(-50%);background:#2A2A42;border:0.5px solid #3A3A55;border-radius:6px;padding:4px 8px;white-space:nowrap;font-size:10px;color:#C8C8D8;z-index:10;pointer-events:none}
+.tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:3px solid transparent;border-top-color:#2A2A42}
+
+/* Loading / Error */
+.loading{text-align:center;padding:40px;color:#555570;font-size:14px}
+.error{text-align:center;padding:20px;color:#E24B4A;font-size:13px;background:#3A1515;border-radius:8px}
+
+/* Refresh */
+.refresh-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.refresh-btn{font-size:11px;color:#555570;background:transparent;border:0.5px solid #2A2A42;border-radius:6px;padding:4px 10px;cursor:pointer}
+.refresh-btn:hover{color:#C8C8D8;border-color:#555570}
+.updated-lbl{font-size:10px;color:#333355}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading">Загружаем данные из таблицы...</div>
+</div>
+
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbyiepOL0dmJsY7suoKvdU-CnOkyW7oQpsxvjIA0lLvQ6bCayl0tzcvGedtuh3LIIQiR/exec';
+var state = {
+  data: null,
+  activeUnit: null,
+  openPhases: {},
+  lastUpdated: null
+};
+
+// Монеты по приоритету
+var COIN_MAP = {'Высокий': 1000, 'Средний': 500, 'Низкий': 200};
+
+// ─── ЗАГРУЗКА ДАННЫХ ────────────────────────────────────────────
+function loadData() {
+  fetch(API_URL)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      state.data = data;
+      state.lastUpdated = data.updated;
+      if (data.units && data.units.length > 0) {
+        state.activeUnit = data.units[0].id;
+      }
+      render();
+    })
+    .catch(function(err){
+      document.getElementById('app').innerHTML =
+        '<div class="error">Ошибка загрузки данных.<br>Проверь URL и права доступа Web App.<br><br>' + err.message + '</div>';
+    });
+}
+
+// ─── HELPERS ────────────────────────────────────────────────────
+function getUnitData(unitId) {
+  var d = state.data;
+  var unit    = d.units.find(function(u){ return u.id === unitId; });
+  var phases  = d.phases.filter(function(p){ return p.unitId === unitId; }).sort(function(a,b){ return a.order - b.order; });
+  var tasks   = d.tasks.filter(function(t){ return t.unitId === unitId; });
+  var finance = d.finance.filter(function(f){ return f.unitId === unitId; });
+  return { unit: unit, phases: phases, tasks: tasks, finance: finance };
+}
+
+function getCoins(task) {
+  return task.coins || COIN_MAP[task.priority] || 200;
+}
+
+function isOverdue(deadline, status) {
+  if (!deadline || status === '✅ Готово' || status === '❌ Отменено') return false;
+  var parts = deadline.split('.');
+  if (parts.length < 3) return false;
+  var d = new Date(parts[2], parts[1]-1, parts[0]);
+  return d < new Date();
+}
+
+function getActivityData(tasks) {
+  var map = {};
+  tasks.forEach(function(t){
+    if (t.doneDate) {
+      map[t.doneDate] = (map[t.doneDate] || 0) + 1;
+    }
+  });
+  var days = [];
+  var streak = 0; var tempStreak = 0; var today = new Date();
+  for (var i = 29; i >= 0; i--) {
+    var d = new Date(today); d.setDate(today.getDate() - i);
+    var key = pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();
+    var count = map[key] || 0;
+    days.push({ key: key, count: count });
+  }
+  // streak — подряд от сегодня назад
+  for (var i = days.length-1; i >= 0; i--) {
+    if (days[i].count > 0) tempStreak++;
+    else break;
+  }
+  streak = tempStreak;
+  var totalActive = days.filter(function(d){ return d.count > 0; }).length;
+  return { days: days, streak: streak, totalActive: totalActive };
+}
+
+function pad(n){ return n < 10 ? '0'+n : ''+n; }
+
+function statusBadge(status) {
+  var cls = status === 'Активен' ? 'status-active' : status === 'Запуск' ? 'status-launch' : status === 'Масштаб' ? 'status-scale' : 'status-idea';
+  return '<span class="status-badge '+cls+'">'+status+'</span>';
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────
+function render() {
+  var app = document.getElementById('app');
+  var d = state.data;
+  if (!d) { app.innerHTML = '<div class="loading">Загружаем...</div>'; return; }
+
+  // Суммарные данные для уровня 1
+  var totalProfit = 0, totalBudget = 0;
+  d.finance.forEach(function(f){ totalProfit += (f.profit || 0); totalBudget += (f.contribution || 0); });
+  var activeUnits = d.units.filter(function(u){ return u.status === 'Активен'; }).length;
+
+  var html = '';
+
+  // Refresh row
+  html += '<div class="refresh-row">';
+  html += '<span class="updated-lbl">Обновлено: ' + (state.lastUpdated || '—') + '</span>';
+  html += '<button class="refresh-btn" onclick="refreshData()">Обновить</button>';
+  html += '</div>';
+
+  // ══ УРОВЕНЬ 1 ══
+  html += '<div class="level-lbl">Уровень 1 — главная цель</div>';
+  html += '<div class="card">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">';
+  html += '<div><div style="font-size:11px;color:#555570;margin-bottom:4px">Главная цель</div>';
+  html += '<div style="font-size:14px;font-weight:700;color:#C8C8D8;line-height:1.5">10% от прибыли каждого юнита<br>→ облигации на 5 лет</div></div>';
+  html += '<div style="text-align:right"><div style="font-size:10px;color:#555570;margin-bottom:2px">Накоплено в облигациях</div>';
+  html += '<div style="font-size:24px;font-weight:700;color:#1D9E75">'+totalBudget.toLocaleString('ru-RU')+' ₽</div>';
+  html += '<div style="font-size:10px;color:#333355;margin-top:1px">из 18 000 000 ₽ за 5 лет</div></div>';
+  html += '</div>';
+  html += '<div class="grid4">';
+  html += '<div class="stat"><div class="stat-val">'+totalBudget.toLocaleString('ru-RU')+' ₽</div><div class="stat-lbl">Этот месяц</div></div>';
+  html += '<div class="stat"><div class="stat-val">'+activeUnits+'</div><div class="stat-lbl">Активных юнита</div></div>';
+  html += '<div class="stat"><div class="stat-val">'+totalBudget.toLocaleString('ru-RU')+' ₽</div><div class="stat-lbl">В облигациях</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#1D9E75">5 лет</div><div class="stat-lbl">Горизонт</div></div>';
+  html += '</div></div>';
+
+  // ══ УРОВЕНЬ 2 — ТАБЫ ══
+  html += '<div class="level-lbl">Уровень 2 — юниты</div>';
+  html += '<div class="card" style="padding:10px 16px"><div class="tab-row">';
+  d.units.forEach(function(u){
+    var active = u.id === state.activeUnit ? ' active' : '';
+    html += '<div class="tab'+active+'" onclick="switchUnit(''+u.id+'')">'+u.name+'</div>';
+  });
+  html += '</div></div>';
+
+  // ══ УРОВЕНЬ 3 ══
+  html += renderUnit(state.activeUnit);
+
+  app.innerHTML = html;
+
+  // Активность
+  renderActivityGrid(state.activeUnit);
+}
+
+function renderUnit(unitId) {
+  var ud = getUnitData(unitId);
+  var u = ud.unit; var phases = ud.phases; var tasks = ud.tasks; var finance = ud.finance;
+  if (!u) return '<div class="error">Юнит не найден</div>';
+
+  var html = '<div class="level-lbl">Уровень 3 — '+u.name+'</div>';
+
+  // ── БЛОК 1: ГЕЙМИФИКАЦИЯ ──
+  var totalCoins = tasks.reduce(function(s,t){ return s + getCoins(t); }, 0);
+  var earnedCoins = tasks.filter(function(t){ return t.status === '✅ Готово'; }).reduce(function(s,t){ return s + getCoins(t); }, 0);
+  var doneTasks = tasks.filter(function(t){ return t.status === '✅ Готово'; }).length;
+  var totalTasks = tasks.length;
+
+  // Сегодня
+  var todayKey = pad(new Date().getDate())+'.'+pad(new Date().getMonth()+1)+'.'+new Date().getFullYear();
+  var todayCoins = tasks.filter(function(t){ return t.doneDate === todayKey; }).reduce(function(s,t){ return s + getCoins(t); }, 0);
+
+  var coinPct = totalCoins > 0 ? Math.round(earnedCoins / totalCoins * 100) : 0;
+  var taskPct = totalTasks > 0 ? Math.round(doneTasks / totalTasks * 100) : 0;
+
+  html += '<div class="dark-card">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+  html += '<div style="font-size:12px;color:#444466">⬡ Монеты — '+u.name+'</div>';
+  html += '<div style="font-size:11px;color:#333355">'+u.startDate+'</div></div>';
+  html += '<div style="font-size:36px;font-weight:700;color:'+u.color+';letter-spacing:-1px;margin-bottom:10px">'+earnedCoins.toLocaleString('ru-RU')+' <span style="font-size:18px;color:#333355">⬡</span></div>';
+  html += '<div style="margin-bottom:8px"><div style="font-size:10px;color:#444466;margin-bottom:4px">Прогресс по монетам</div>';
+  html += '<div class="pbar-wrap" style="height:6px"><div class="pbar-fill" style="width:'+coinPct+'%;background:'+u.color+';height:6px"></div></div>';
+  html += '<div class="pbar-labels"><span>'+earnedCoins.toLocaleString('ru-RU')+' ⬡ заработано</span><span>Максимум: '+totalCoins.toLocaleString('ru-RU')+' ⬡</span></div></div>';
+  html += '<div><div style="font-size:10px;color:#444466;margin-bottom:4px">Прогресс по задачам</div>';
+  html += '<div class="pbar-wrap" style="height:6px"><div class="pbar-fill" style="width:'+taskPct+'%;background:#1D9E75;height:6px"></div></div>';
+  html += '<div class="pbar-labels"><span>'+doneTasks+' из '+totalTasks+' задач выполнено</span><span>'+taskPct+'%</span></div></div>';
+  html += '<div class="metric-row">';
+  html += '<div class="metric"><div class="mv" style="color:'+u.color+'">'+earnedCoins.toLocaleString('ru-RU')+' ⬡</div><div class="ml">Заработано всего</div></div>';
+  html += '<div class="metric"><div class="mv" style="color:#5DCAA5">+'+(todayCoins||0)+' ⬡</div><div class="ml">Заработано сегодня</div></div>';
+  html += '<div class="metric"><div class="mv" style="color:#888899">'+totalCoins.toLocaleString('ru-RU')+' ⬡</div><div class="ml">Можно заработать</div></div>';
+  html += '</div></div>';
+
+  // ── БЛОК 2: СТАТИСТИКА ──
+  var lastFinance = finance.length > 0 ? finance[finance.length-1] : null;
+  var profit = lastFinance ? (lastFinance.profit || 0) : 0;
+  var contribution = lastFinance ? (lastFinance.contribution || 0) : 0;
+  var overdueCount = tasks.filter(function(t){ return isOverdue(t.deadline, t.status); }).length;
+  var overduePct = totalTasks > 0 ? Math.round(overdueCount / totalTasks * 100) : 0;
+
+  html += '<div class="card"><div class="sec-title">Статистика юнита</div>';
+  html += '<div class="grid4">';
+  html += '<div class="stat"><div class="stat-val" style="color:#1D9E75">'+profit.toLocaleString('ru-RU')+' ₽</div><div class="stat-lbl">Чистая прибыль</div></div>';
+  html += '<div class="stat"><div class="stat-val" style="color:#5DCAA5">'+contribution.toLocaleString('ru-RU')+' ₽</div><div class="stat-lbl">10% в бюджет</div></div>';
+  html += '<div class="stat"><div class="stat-val">'+totalTasks+'</div><div class="stat-lbl">Всего задач</div></div>';
+  html += '<div class="stat"><div style="margin-bottom:5px">'+statusBadge(u.status)+'</div><div class="stat-lbl">Статус юнита</div></div>';
+  html += '</div>';
+  html += '<div style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">';
+  html += '<span style="font-size:11px;color:#555570">Просрочка по задачам</span>';
+  html += '<span style="font-size:11px;color:#E24B4A;font-weight:700">'+overdueCount+' из '+totalTasks+' просрочено</span></div>';
+  html += '<div class="pbar-wrap" style="height:8px;background:#1E1E38"><div class="pbar-fill" style="width:'+overduePct+'%;background:#E24B4A;height:8px"></div></div>';
+  html += '<div class="pbar-labels"><span>0%</span><span>'+overduePct+'% просрочено</span></div></div></div>';
+
+  // ── БЛОК 3: ГАНТ ──
+  html += '<div class="card"><div class="sec-title">Гант по фазам</div>';
+  html += '<div class="gantt-header">';
+  var periods = ['Нед.1','Нед.2','Нед.3','Нед.4','Мес.2','Мес.3','Мес.4','Мес.5','Мес.6'];
+  periods.forEach(function(p){ html += '<div class="gantt-wk">'+p+'</div>'; });
+  html += '</div>';
+
+  var totalPhases = phases.length;
+  phases.forEach(function(ph, idx){
+    var phaseTasks = tasks.filter(function(t){ return t.phaseId == ph.number; });
+    var phaseDone = phaseTasks.filter(function(t){ return t.status === '✅ Готово'; }).length;
+    var phaseTotal = phaseTasks.length;
+    var phasePct = phaseTotal > 0 ? Math.round(phaseDone / phaseTotal * 100) : 0;
+    var isActive = phaseDone > 0 && phaseDone < phaseTotal;
+
+    // Позиция на Ганте
+    var segW = Math.round(100 / totalPhases);
+    var left = idx * segW;
+    var width = segW;
+
+    var labelColor = isActive ? u.color : '#444466';
+    html += '<div class="gantt-row">';
+    html += '<div class="gantt-lbl" style="color:'+labelColor+'">'+ph.name+'</div>';
+    html += '<div class="gantt-track">';
+    html += '<div class="gantt-bg" style="left:'+left+'%;width:'+width+'%;background:'+u.color+'"></div>';
+    if (phasePct > 0) {
+      html += '<div class="gantt-prog" style="left:'+left+'%;width:'+(width*phasePct/100)+'%;background:'+u.color+'"></div>';
+    }
+    html += '<div class="gantt-text" style="left:'+left+'%;width:'+width+'%;color:'+(phasePct > 0 ? '#EEEDFE' : '#444466')+'">';
+    if (isActive) html += '<div class="pulse" style="background:'+u.color+'"></div>';
+    html += phaseDone+'/'+phaseTotal+'</div>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  // ── БЛОК 4: ЗАДАЧИ ──
+  html += '<div class="card"><div class="sec-title">Задачи по фазам</div>';
+  phases.forEach(function(ph){
+    var phaseTasks = tasks.filter(function(t){ return t.phaseId == ph.number; });
+    var phaseDone = phaseTasks.filter(function(t){ return t.status === '✅ Готово'; }).length;
+    var isOpen = state.openPhases[unitId + '_' + ph.number];
+    var phaseKey = unitId + '_' + ph.number;
+
+    // Цвет фазы
+    var colors = [u.color, '#1D9E75', '#BA7517', '#378ADD', '#D4537E'];
+    var phColor = colors[(ph.order - 1) % colors.length];
+
+    html += '<div class="phase-block">';
+    html += '<div class="phase-hdr" style="background:rgba(255,255,255,0.03)" onclick="togglePhase(''+phaseKey+'')">';
+    html += '<div class="dot" style="background:'+phColor+'"></div>';
+    html += '<div class="phase-name" style="color:'+(phaseDone > 0 ? phColor : '#666677')+'">'+ph.name+'</div>';
+    if (ph.period) html += '<div style="font-size:10px;color:#333355">'+ph.period+'</div>';
+    html += '<div class="phase-cnt">'+phaseDone+'/'+phaseTasks.length+'</div>';
+    html += '<div class="chevron'+(isOpen ? ' open' : '')+'">›</div></div>';
+
+    html += '<div class="task-list'+(isOpen ? ' open' : '')+'" id="phase_'+phaseKey+'">';
+    phaseTasks.forEach(function(t){
+      var done = t.status === '✅ Готово';
+      var working = t.status === '⚡ В работе';
+      var over = isOverdue(t.deadline, t.status);
+      var cbClass = done ? 'done' : working ? 'working' : '';
+      var cbIcon = done ? '✓' : working ? '⚡' : '';
+      var coins = getCoins(t);
+      var pClass = t.priority === 'Высокий' ? 'p-high' : t.priority === 'Средний' ? 'p-mid' : 'p-low';
+
+      html += '<div class="task-row">';
+      html += '<div class="task-cb '+cbClass+'">'+cbIcon+'</div>';
+      html += '<div class="task-info">';
+      html += '<div class="task-name'+(done ? ' done' : '')+'">'+t.name+'</div>';
+      html += '<div class="task-meta">';
+      html += '<span class="priority '+pClass+'">'+t.priority+'</span>';
+      if (t.deadline) html += '<span class="deadline'+(over ? ' overdue' : '')+'">'+t.deadline+(over ? ' !' : '')+'</span>';
+      if (t.type) html += '<span class="type-tag">'+t.type+'</span>';
+      if (t.assignee) html += '<span style="font-size:10px;color:#555570">'+t.assignee+'</span>';
+      html += '</div></div>';
+      html += '<div class="coins">+'+coins.toLocaleString('ru-RU')+' ⬡</div>';
+      html += '</div>';
+    });
+    html += '<div class="add-btn">+ Добавить задачу в таблице</div>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  // ── БЛОК 5: АКТИВНОСТЬ ──
+  html += '<div class="card"><div class="sec-title">Активность</div>';
+  html += '<div class="streak-row" id="streak_'+unitId+'"></div>';
+  html += '<div class="days-grid" id="activity_'+unitId+'"></div>';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+  html += '<div style="font-size:11px;color:#555570">Последние 30 дней</div>';
+  html += '<div style="display:flex;align-items:center;gap:6px">';
+  html += '<div style="width:12px;height:12px;border-radius:2px;background:#1E1E38"></div><div style="font-size:10px;color:#555570">нет</div>';
+  html += '<div style="width:12px;height:12px;border-radius:2px;background:#5DCAA5;margin-left:6px"></div><div style="font-size:10px;color:#555570">есть задачи</div>';
+  html += '</div></div></div>';
+
+  return html;
+}
+
+function renderActivityGrid(unitId) {
+  var ud = getUnitData(unitId);
+  var act = getActivityData(ud.tasks);
+
+  // Стрик
+  var streakEl = document.getElementById('streak_'+unitId);
+  if (streakEl) {
+    var ud2 = getUnitData(unitId);
+    var todayCoins2 = ud2.tasks.filter(function(t){
+      var todayKey = pad(new Date().getDate())+'.'+pad(new Date().getMonth()+1)+'.'+new Date().getFullYear();
+      return t.doneDate === todayKey;
+    }).reduce(function(s,t){ return s + getCoins(t); }, 0);
+
+    streakEl.innerHTML =
+      '<div class="streak-stat"><div class="streak-icon">🔥</div><div><div class="streak-val">'+act.streak+'</div><div class="streak-lbl">дней подряд</div></div></div>' +
+      '<div class="streak-stat"><div class="streak-icon">📅</div><div><div class="streak-val">'+act.totalActive+'</div><div class="streak-lbl">активных дней</div></div></div>' +
+      '<div class="streak-stat"><div class="streak-icon">⬡</div><div><div class="streak-val" style="color:#7F77DD">+'+todayCoins2+'</div><div class="streak-lbl">монет сегодня</div></div></div>';
+  }
+
+  // Сетка дней
+  var gridEl = document.getElementById('activity_'+unitId);
+  if (!gridEl) return;
+  gridEl.innerHTML = '';
+  act.days.forEach(function(d){
+    var day = document.createElement('div');
+    day.className = 'day';
+    var color = d.count >= 5 ? '#1D9E75' : d.count >= 3 ? '#5DCAA5' : d.count >= 1 ? '#9FE1CB' : '#1E1E38';
+    day.style.background = color;
+    if (d.count > 0) {
+      var tip = document.createElement('div');
+      tip.className = 'tip';
+      var word = d.count === 1 ? 'задача' : d.count < 5 ? 'задачи' : 'задач';
+      tip.textContent = 'Сделано '+d.count+' '+word;
+      day.appendChild(tip);
+    }
+    gridEl.appendChild(day);
+  });
+}
+
+// ─── ACTIONS ────────────────────────────────────────────────────
+function switchUnit(unitId) {
+  state.activeUnit = unitId;
+  render();
+  renderActivityGrid(unitId);
+}
+
+function togglePhase(key) {
+  state.openPhases[key] = !state.openPhases[key];
+  render();
+  renderActivityGrid(state.activeUnit);
+}
+
+function refreshData() {
+  document.getElementById('app').innerHTML = '<div class="loading">Обновляем данные...</div>';
+  loadData();
+}
+
+// ─── СТАРТ ──────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
