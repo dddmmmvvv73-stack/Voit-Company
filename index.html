@@ -559,7 +559,7 @@ function saveTask(){
     type:document.getElementById('t_type').value,
     assignee:document.getElementById('t_assignee').value,
     priority:pri,deadline:dlFmt,coins:CM2[pri]||500,
-    status:'⛄ Не начато',
+    status:'⬜ Не начато',
     note:document.getElementById('t_note').value
   },function(res){
     if(res&&res.success){
