@@ -386,7 +386,8 @@ function renderUnit(uid) {
       var cbIcon=done?'✓':working?'⚡':'';
       var pCls=t.priority==='Высокий'?'p-high':t.priority==='Средний'?'p-mid':'p-low';
       html+='<div class="task-row">';
-      html+='<div class="task-cb '+cbCls+'">'+cbIcon+'</div>';
+      var safeName=t.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+      html+='<div class="task-cb '+cbCls+'" onclick="toggleTask(event,\''+uid+'\','+ph.number+',\''+safeName+'\','+coins(t)+')">'+cbIcon+'</div>';
       html+='<div class="task-info">';
       html+='<div class="task-name'+(done?' done':'')+'">'+t.name+'</div>';
       html+='<div class="task-meta">';
@@ -595,6 +596,54 @@ function showReward(taskName,coinsVal,unitId){
   document.getElementById('rBadge').textContent='✅ '+done+' задач выполнено';
   document.getElementById('rewardModal').classList.add('open');
 }
+  function getTodayStr(){
+  var d=new Date();
+  return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();
+}
+
+function toggleTask(e,unitId,phaseId,taskName,coinsVal){
+  e.stopPropagation();
+  var cb=e.currentTarget;
+  var isDone=cb.classList.contains('done');
+
+  if(isDone){
+    // Снимаем галочку
+    cb.classList.remove('done');
+    cb.textContent='';
+    var nm=cb.parentElement.querySelector('.task-name');
+    if(nm) nm.classList.remove('done');
+    jsonpPost(WR_API,{
+      action:'updateStatus',unitId:unitId,phaseId:phaseId,
+      name:taskName,status:'⚡ В работе',doneDate:''
+    },function(res){
+      if(res&&res.success){
+        var t=state.data&&state.data.tasks.find(function(t){return t.unitId===unitId&&t.phaseId==phaseId&&t.name===taskName;});
+        if(t){t.status='⚡ В работе';t.doneDate='';}
+        setTimeout(function(){loadData(true);},1000);
+      }
+    },null);
+
+  } else {
+    // Ставим галочку
+    cb.classList.add('done');
+    cb.textContent='✓';
+    var nm2=cb.parentElement.querySelector('.task-name');
+    if(nm2) nm2.classList.add('done');
+    jsonpPost(WR_API,{
+      action:'updateStatus',unitId:unitId,phaseId:phaseId,
+      name:taskName,status:'✅ Готово',doneDate:getTodayStr()
+    },function(res){
+      if(res&&res.success){
+        var t=state.data&&state.data.tasks.find(function(t){return t.unitId===unitId&&t.phaseId==phaseId&&t.name===taskName;});
+        if(t){t.status='✅ Готово';t.doneDate=getTodayStr();}
+        showReward(taskName,coinsVal,unitId);
+        setTimeout(function(){loadData(true);},2000);
+      }
+    },function(){showReward(taskName,coinsVal,unitId);});
+  }
+}
+
+  
 </script>
 
 </body>
