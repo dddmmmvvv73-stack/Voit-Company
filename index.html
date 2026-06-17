@@ -502,6 +502,19 @@ loadData(false);
     <div class="modal-row"><div class="modal-lbl">Дедлайн</div><input class="modal-input" id="t_deadline" type="date"></div>
     <div class="modal-row"><div class="modal-lbl">Тип задачи</div><select class="modal-select" id="t_type"><option>Одноразовая</option><option>Повторяющаяся</option><option>Операционная</option><option>Проектная</option></select></div>
     <div class="modal-row"><div class="modal-lbl">Ответственный</div><input class="modal-input" id="t_assignee" placeholder="Имя..."></div>
+    <div class="modal-row">
+  <div class="modal-lbl">Статус</div>
+  <select class="modal-select" id="t_status">
+    <option value="⬜ Не начато">⬜ Не начато</option>
+    <option value="⚡ В работе">⚡ В работе</option>
+    <option value="✅ Готово">✅ Готово</option>
+    <option value="❌ Отменено">❌ Отменено</option>
+  </select>
+</div>
+<div class="modal-row">
+  <div class="modal-lbl">Примечание</div>
+  <input class="modal-input" id="t_note" placeholder="Необязательно...">
+</div>
     <div class="modal-row"><div class="modal-lbl">Примечание</div><input class="modal-input" id="t_note" placeholder="Необязательно..."></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">Отмена</button>
