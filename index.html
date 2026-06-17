@@ -469,6 +469,10 @@ function togglePhase(key) {
 function handleJsonp(data) { onDataLoaded(data, false); }
 
 loadData(false);
+// Автообновление каждые 2 минуты
+setInterval(function(){
+  fetchData(true); // тихо в фоне, без спиннера
+}, 2 * 60 * 1000);
 </script>
 
 <style>
